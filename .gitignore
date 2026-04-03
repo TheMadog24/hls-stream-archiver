@@ -1,0 +1,49 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env*
+
+# Editor
+.vscode/
+.idea/
+
+# Build/output
+build/
+dist/
+output/
+data/
+
+# Segments
+*.ts
+streams/
+segments/
+
+# Python
+__pycache__/
+*.pyc
+
+# Temp files
+*.tmp
+*.temp
+
+# Archive/session data (Future Proofing)
+recordings/
+sessions/
+
+# Database files (Future Proofing)
+*.db
+*.sqlite
+
+# Video and Containers (Future Proofing)
+*.mp4
+*.mkv
+*.zip
+*.tar
+
+# Cache (Future Proofing)
+.cache/
