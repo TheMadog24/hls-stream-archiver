@@ -9,7 +9,7 @@ This tool is designed as both a **CLI tool and a reusable library** that can be 
 ---
 ## In Development / Planning
 
-This project is a necessary tool for another project, as well as a learning experience for me
+This is a necessary tool for another project of mine, as well as a learning experience for me.
 
 ## Features
 
