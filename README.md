@@ -34,22 +34,7 @@ This is a necessary tool for another project of mine, as well as a learning expe
 
 ---
 
-## Installation
+## Installation and Usage
 
+To Do...
 
-### Clone the repository
-```
-git clone https://github.com/TheMadog24/hls-stream-archiver.git
-
-cd hls-stream-archiver
-```
-
-#### (Optional) Create a virtual environment
-```
-python -m venv .venv
-source .venv/bin/activate
-```
-#### Install dependencies
-```
-pip install -r requirements.txt
-```
