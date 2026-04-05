@@ -1,6 +1,7 @@
 import argparse
 import logging
 from hls_recorder.logger import setup_logger
+from hls_recorder.playlist import PlaylistFetcher
 
 
 def parse_args():
@@ -99,13 +100,35 @@ def main():
     else:
         logger.info("[Auth] No authentication provided (fallback mode)")
 
-    
-	
 	
     # Next step
 
 	
     logger.info(f"Target URL: {args.url}")
+	
+	
+	# ------------------------
+    # Fetch playlist
+    # ------------------------
+
+    fetcher = PlaylistFetcher(
+        url=args.url,
+        auth_token=args.auth_token
+    )
+
+    try:
+        playlist_text = fetcher.fetch()
+
+        logger.info("Playlist fetched successfully")
+
+        # Prints what it sees
+        logger.debug("Playlist preview:")
+        for line in playlist_text.splitlines()[:10]:
+            logger.debug(line)
+
+    except Exception:
+        logger.error("Failed to fetch playlist")
+        return
 
 
 if __name__ == "__main__":
