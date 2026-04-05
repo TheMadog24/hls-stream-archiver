@@ -11,6 +11,36 @@ This tool is designed as both a **CLI tool and a reusable library** that can be 
 
 This is a necessary tool for another project of mine, as well as a learning experience for me.
 
+## Currently Implemented
+
+- CLI interface with arguments
+- Basic logging system
+- HTTP playlist fetching
+- Optional OAuth support
+- Error handling(?)
+- Playlist Detection
+
+
+## To Do
+
+### Required
+- Download and process HLS segments
+- Continuous recording loop
+- Handle retries and reconnects
+- Save `.ts` segments
+- OAuth Validation and reporting
+- Full debug/logging support
+- Stream quality selection
+- Config file support
+- Resume interrupted recordings
+- Docker Support
+
+### Optional
+- (Optional) combined video output
+- (Optional) audio-only capture
+
+---
+
 ## Features
 
 - **HLS recording**
