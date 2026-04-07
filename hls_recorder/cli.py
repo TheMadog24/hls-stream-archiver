@@ -3,6 +3,7 @@ import logging
 from hls_recorder.logger import setup_logger
 from hls_recorder.playlist import PlaylistFetcher
 from hls_recorder.parser import PlaylistParser
+from hls_recorder.quality import select_variant
 
 
 def parse_args():
@@ -39,12 +40,16 @@ def parse_args():
     parser.add_argument("--debug", action="store_true", help="Enable debug output")
 
     parser.add_argument("--log-file", help="Write logs to file")
+    
+    parser.add_argument("--quality", default="best", help="Stream quality (e.g. best, 1080, 720, 480)")
 
     return parser.parse_args()
-
+    
 
 def main():
     args = parse_args()
+    
+    is_debug = args.debug
 
     # ------------------------
     # Setup logging
@@ -103,11 +108,66 @@ def main():
 
         variants = parser.parse_master()
 
-        for v in variants:
-            logger.info(f"Variant: {v['url']}")
+        logger.info(f"Found {len(variants)} variants")
+
+        if is_debug:
+            for v in variants:
+                logger.debug(f"Variant: {v['url']}")
+
+        # ------------------------
+        # Select best variant
+        # ------------------------
+
+        selected_variant, match_type = select_variant(variants, args.quality)
+
+        best_variant = selected_variant["url"]
+
+        logger.info(f"Selected quality: {args.quality} ({match_type})")
+        logger.info(f"Variant URL: {best_variant}")
+        
+
+        # ------------------------
+        # Fetch variant playlist
+        # ------------------------
+
+        variant_fetcher = PlaylistFetcher(
+            url=best_variant,
+            auth_token=args.auth_token
+        )
+
+        try:
+            variant_content = variant_fetcher.fetch()
+            logger.info("Fetched variant playlist")
+
+        except Exception:
+            logger.error("Failed to fetch variant playlist")
+            return
+
+        # ------------------------
+        # Parse media playlist
+        # ------------------------
+
+        variant_parser = PlaylistParser(variant_content, best_variant)
+
+        if variant_parser.is_master_playlist():
+            logger.warning("Variant is still a master playlist (unexpected)")
+        else:
+            logger.info("Detected media playlist (segments)")
+
+            segments = variant_parser.parse_media()
+
+            logger.info(f"Found {len(segments)} segments")
+
+            if is_debug:
+                for s in segments[:10]:  # optionally limit
+                    logger.debug(f"Segment: {s}")
+
     else:
         logger.info("Detected media playlist (segments)")
+        segments = parser.parse_media()
 
+        for s in segments[:10]:
+            logger.info(f"Segment: {s}")    
 
 if __name__ == "__main__":
     main()

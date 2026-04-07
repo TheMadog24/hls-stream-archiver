@@ -1,67 +1,32 @@
 import logging
 import sys
 
-
-def setup_logger(
-    verbose: bool = False,
-    debug: bool = False,
-    log_file: str = None,
-):
-
-    """
-    Configure application logging.
-
-    :param verbose: Enable verbose (INFO) console output
-    :param debug: Enable debug (DEBUG) console output
-    :param log_file: Optional file to write logs to
-    """
-
-    # This sets up logging, and captures everything internally
-    # Will setup filters later
-
+def setup_logger(verbose=False, debug=False, log_file=None):
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
 
-    # Clear Hadlers to prevent duplicate logs, I think
+    # Clear existing handlers (important when re-running in same process)
+    if logger.handlers:
+        logger.handlers.clear()
 
-    logger.handlers.clear()
-
-    # ------------------------
-    # Console
-    # ------------------------
-
-    # Setup multiple levels of logging/debugging
-    # File should write everything to a specified output file
-
-    console_handler = logging.StreamHandler(sys.stdout)
-
+    # Set level
     if debug:
-        console_level = logging.DEBUG
+        logger.setLevel(logging.DEBUG)
     elif verbose:
-        console_level = logging.INFO
+        logger.setLevel(logging.INFO)
     else:
-        console_level = logging.WARNING
+        logger.setLevel(logging.INFO)  # <-- IMPORTANT
 
-    console_handler.setLevel(console_level)
+    formatter = logging.Formatter("[%(levelname)s] %(message)s")
 
-    console_format = logging.Formatter("[%(levelname)s] %(message)s")
-    console_handler.setFormatter(console_format)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.DEBUG)  # allow all, root logger filters it
 
-    logger.addHandler(console_handler)
+    logger.addHandler(handler)
 
-    # ------------------------
-    # File Handler
-    # ------------------------
-
+    # Optional file logging
     if log_file:
         file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)
-
-        file_format = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-        )
-        file_handler.setFormatter(file_format)
-
         logger.addHandler(file_handler)
-
-    return logger
