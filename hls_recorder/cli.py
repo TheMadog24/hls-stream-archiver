@@ -1,6 +1,7 @@
 import argparse
 import logging
 from hls_recorder.logger import setup_logger
+from hls_recorder.logger import log_verbose, log_debug
 from hls_recorder.playlist import PlaylistFetcher
 from hls_recorder.parser import PlaylistParser
 from hls_recorder.quality import select_variant
@@ -49,6 +50,7 @@ def parse_args():
 def main():
     args = parse_args()
     
+    is_verbose = args.verbose
     is_debug = args.debug
 
     # ------------------------
@@ -82,65 +84,89 @@ def main():
     logger.info(f"Target URL: {args.url}")
 
     # ------------------------
-    # Fetch playlist
+    # Playlist Fetching
     # ------------------------
 
-    fetcher = PlaylistFetcher(url=args.url, auth_token=args.auth_token)
+    fetcher = PlaylistFetcher(
+        url=args.url,
+        auth_token=args.auth_token,
+        verbose=is_verbose,
+        debug=is_debug
+    )
 
     try:
+        if is_verbose or is_debug:
+            logger.info(f"Fetching playlist: {args.url}")
+            
         playlist_text = fetcher.fetch()
-
-        logger.info("Playlist fetched successfully")
+        logger.info("Playlist found")
+        
 
         # Prints what it sees
         logger.debug("Playlist preview:")
         for line in playlist_text.splitlines()[:10]:
             logger.debug(line)
 
-    except Exception:
-        logger.error("Failed to fetch playlist")
+    except Exception as e:
+        logger.error(f"Failed to fetch playlist: {e}")
+        if is_debug:
+            logger.debug("Full exception:", exc_info=True)
         return
 
     parser = PlaylistParser(playlist_text, args.url)
 
     if parser.is_master_playlist():
-        logger.info("Detected master playlist")
-
         variants = parser.parse_master()
-
-        logger.info(f"Found {len(variants)} variants")
+		
+		
+        if is_verbose or is_debug:
+            logger.info("Detected master playlist")
+            logger.info(f"Found {len(variants)} variants")
 
         if is_debug:
             for v in variants:
                 logger.debug(f"Variant: {v['url']}")
 
         # ------------------------
-        # Select best variant
+        # Quality Selection
         # ------------------------
 
         selected_variant, match_type = select_variant(variants, args.quality)
 
         best_variant = selected_variant["url"]
-
-        logger.info(f"Selected quality: {args.quality} ({match_type})")
-        logger.info(f"Variant URL: {best_variant}")
+        quality = selected_variant.get("name", args.quality)
+        resolution = selected_variant.get("resolution", "unknown")
+        
+        if is_verbose:
+            logger.info(f"Requested quality: {args.quality}")
+            logger.info(f"Matching variant found: {quality} ({resolution})")
+        
+        logger.info(f"Using quality: {quality}")
+        
+        if is_verbose or is_debug:
+            logger.info(f"Variant URL: {best_variant}")
         
 
         # ------------------------
-        # Fetch variant playlist
+        # Fetch variant playlists
         # ------------------------
 
         variant_fetcher = PlaylistFetcher(
             url=best_variant,
-            auth_token=args.auth_token
+            auth_token=args.auth_token,
+            verbose=is_verbose,
+            debug=is_debug
         )
 
         try:
             variant_content = variant_fetcher.fetch()
-            logger.info("Fetched variant playlist")
+            if is_verbose or is_debug:
+                logger.info("Fetched variant playlist")
 
-        except Exception:
-            logger.error("Failed to fetch variant playlist")
+        except Exception as e:
+            logger.error(f"Failed to fetch playlist: {e}")
+            if is_debug:
+                logger.debug("Full exception:", exc_info=True)
             return
 
         # ------------------------
@@ -152,11 +178,15 @@ def main():
         if variant_parser.is_master_playlist():
             logger.warning("Variant is still a master playlist (unexpected)")
         else:
-            logger.info("Detected media playlist (segments)")
-
             segments = variant_parser.parse_media()
-
-            logger.info(f"Found {len(segments)} segments")
+            
+            if is_verbose or is_debug:
+                logger.info("Detected media playlist (segments)")
+            logger.info("Ready to record")
+            
+            if is_verbose:
+                logger.info("Detected media playlist (segments)")
+                logger.info(f"Found {len(segments)} segments")
 
             if is_debug:
                 for s in segments[:10]:  # optionally limit

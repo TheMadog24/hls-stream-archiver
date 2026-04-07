@@ -6,9 +6,12 @@ logger = logging.getLogger(__name__)
 
 
 class PlaylistFetcher:
-    def __init__(self, url: str, auth_token: str = None):
+    def __init__(self, url, auth_token=None, verbose=False, debug=False):
         self.url = url
         self.auth_token = auth_token
+        self.verbose = verbose
+        self.debug = debug
+        
 
     def fetch(self) -> str:
 
@@ -26,7 +29,8 @@ class PlaylistFetcher:
             logger.debug("Using OAuth token for request")
 
         try:
-            logger.info(f"Fetching playlist: {self.url}")
+            if self.verbose or self.debug:
+                logger.info(f"Fetching playlist: {self.url}")
 
             response = requests.get(self.url, headers=headers, timeout=10)
 

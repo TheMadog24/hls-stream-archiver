@@ -30,3 +30,14 @@ def setup_logger(verbose=False, debug=False, log_file=None):
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)
         logger.addHandler(file_handler)
+
+# hls_recorder/logger.py
+
+def log_verbose(logger, msg, verbose: bool):
+    if verbose:
+        logger.info(msg)
+
+
+def log_debug(logger, msg, debug: bool):
+    if debug:
+        logger.debug(msg)
