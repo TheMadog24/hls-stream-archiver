@@ -11,17 +11,16 @@ class PlaylistFetcher:
         self.auth_token = auth_token
 
     def fetch(self) -> str:
-        
 
         headers = {}
 
         # ------------------------
         # Auth Handling
         # ------------------------
-		
-		# Attempts to use Auth if provided
-		
-		# DO NOT LOG AUTH
+
+        # Attempts to use Auth if provided
+
+        # DO NOT LOG AUTH
         if self.auth_token:
             headers["Authorization"] = f"OAuth {self.auth_token}"
             logger.debug("Using OAuth token for request")
@@ -29,11 +28,7 @@ class PlaylistFetcher:
         try:
             logger.info(f"Fetching playlist: {self.url}")
 
-            response = requests.get(
-                self.url,
-                headers=headers,
-                timeout=10
-            )
+            response = requests.get(self.url, headers=headers, timeout=10)
 
             response.raise_for_status()
 
