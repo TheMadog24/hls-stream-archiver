@@ -19,6 +19,7 @@ This is a necessary tool for another project of mine, as well as a learning expe
 - Optional OAuth support
 - Error handling(?)
 - Playlist Detection
+- Quality Selection
 
 
 ## To Do
